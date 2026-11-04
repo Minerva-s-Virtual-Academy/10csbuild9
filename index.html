@@ -8,28 +8,63 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- React & ReactDOM (Development builds with full error logs) -->
+  <!-- React & ReactDOM -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   
-  <!-- Babel Standalone (Transpiles JSX right in the browser) -->
+  <!-- Babel Standalone (Runs JSX in browser) -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
   <div id="root"></div>
 
-  <!-- Note type="text/babel" which allows Babel to parse the JSX code -->
   <script type="text/babel">
     const { useState, useEffect } = React;
+
+    const FLASHCARDS = [
+      { id: 1, term: "Platters", def: "Circular magnetic disks inside an HDD that spin at high speeds to store data magnetically." },
+      { id: 2, term: "Pits and Lands", def: "Microscopic indents and flat areas on optical discs that reflect laser light differently to represent 0s and 1s." },
+      { id: 3, term: "Flash Memory", def: "Solid-state non-volatile technology using semiconductor floating-gate transistors to trap electric charge." },
+      { id: 4, term: "Non-Volatile", def: "Memory that retains stored data even when the electrical power is turned off." },
+      { id: 5, term: "Cloud Storage", def: "Data stored on remote servers accessed via the internet, managed by third-party providers." },
+      { id: 6, term: "Embedded System", def: "A dedicated computer system with a fixed single function built into a larger mechanical/electrical device." }
+    ];
+
+    const QUIZ_QUESTIONS = [
+      {
+        q: "Why are SSDs preferred over HDDs for portable laptops?",
+        options: ["They use spinning platters", "They have no moving parts and high durability", "They are cheaper per GB", "They use optical lasers"],
+        answer: 1,
+        explain: "SSDs have no moving parts, making them far more resistant to physical drops and shock."
+      },
+      {
+        q: "Which property describes memory that retains data when power is lost?",
+        options: ["Volatile", "Cache memory", "Non-volatile", "RAM"],
+        answer: 2,
+        explain: "Secondary storage must be non-volatile so your files remain safe when turned off."
+      },
+      {
+        q: "What physical feature on a CD-ROM reflects laser light to read data?",
+        options: ["Floating gates", "Pits and Lands", "Magnetic domains", "Read/Write heads"],
+        answer: 1,
+        explain: "Lasers detect light reflections from microscopic pits and lands etched on the disc."
+      }
+    ];
 
     function App() {
       const [timeLeft, setTimeLeft] = useState(1500);
       const [timerActive, setTimerActive] = useState(false);
-      const [activeTab, setActiveTab] = useState('welcome');
-      const [stats, setStats] = useState({ totalPoints: 0 });
+      const [activeTab, setActiveTab] = useState('flashcards');
+      
+      // Flashcard state
+      const [cardIndex, setCardIndex] = useState(0);
+      const [showDef, setShowDef] = useState(false);
+      
+      // Quiz state
+      const [quizIndex, setQuizIndex] = useState(0);
+      const [selectedOpt, setSelectedOpt] = useState(null);
+      const [score, setScore] = useState(0);
+      const [quizComplete, setQuizComplete] = useState(false);
 
       useEffect(() => {
         let interval = null;
@@ -47,14 +82,32 @@
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
       };
 
+      const handleAnswerSelect = (optIdx) => {
+        if (selectedOpt !== null) return;
+        setSelectedOpt(optIdx);
+        if (optIdx === QUIZ_QUESTIONS[quizIndex].answer) {
+          setScore(score + 1);
+        }
+      };
+
+      const nextQuestion = () => {
+        if (quizIndex + 1 < QUIZ_QUESTIONS.length) {
+          setQuizIndex(quizIndex + 1);
+          setSelectedOpt(null);
+        } else {
+          setQuizComplete(true);
+        }
+      };
+
       return (
-        <div class="max-w-5xl mx-auto p-6">
-          <header class="border-b border-cyan-800 pb-4 mb-6 flex justify-between items-center">
+        <div class="max-w-4xl mx-auto p-4 sm:p-6">
+          {/* Header */}
+          <header class="border-b border-cyan-800 pb-4 mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-              <h1 class="text-3xl font-bold text-cyan-400">Secondary Storage Mastery</h1>
+              <h1 class="text-2xl sm:text-3xl font-bold text-cyan-400">Secondary Storage Mastery</h1>
               <p class="text-slate-400 text-sm">Edexcel iGCSE CS (Topic 4.2.5 & 4.2.6)</p>
             </div>
-            <div class="flex items-center space-x-4 bg-slate-900 p-3 rounded-lg border border-slate-800">
+            <div class="flex items-center space-x-3 bg-slate-900 p-3 rounded-lg border border-slate-800 self-start sm:self-auto">
               <span class="text-2xl font-mono text-cyan-300">{formatTime(timeLeft)}</span>
               <button 
                 onClick={() => setTimerActive(!timerActive)}
@@ -65,9 +118,138 @@
             </div>
           </header>
 
+          {/* Navigation Tabs */}
+          <div class="flex space-x-2 border-b border-slate-800 mb-6 overflow-x-auto pb-2">
+            <button 
+              onClick={() => setActiveTab('flashcards')}
+              class={`px-4 py-2 rounded-lg font-medium text-sm transition whitespace-nowrap ${activeTab === 'flashcards' ? 'bg-cyan-600 text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800'}`}
+            >
+              1. Key Term Flashcards
+            </button>
+            <button 
+              onClick={() => setActiveTab('quiz')}
+              class={`px-4 py-2 rounded-lg font-medium text-sm transition whitespace-nowrap ${activeTab === 'quiz' ? 'bg-cyan-600 text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800'}`}
+            >
+              2. Speed Check Quiz
+            </button>
+          </div>
+
+          {/* Main Area */}
           <main class="bg-slate-900 p-6 rounded-xl border border-slate-800">
-            <h2 class="text-xl font-semibold text-cyan-300 mb-2">Welcome Students!</h2>
-            <p class="text-slate-300 mb-4">Complete your 25-minute pre-learning tasks using the single-file template.</p>
+            {activeTab === 'flashcards' && (
+              <div>
+                <div class="flex justify-between items-center mb-4">
+                  <h2 class="text-lg font-semibold text-cyan-300">Term {cardIndex + 1} of {FLASHCARDS.length}</h2>
+                  <span class="text-xs text-slate-400">Click card to flip</span>
+                </div>
+
+                <div 
+                  onClick={() => setShowDef(!showDef)}
+                  class="min-h-[200px] bg-slate-800 rounded-xl border-2 border-cyan-500/30 hover:border-cyan-400 flex flex-col justify-center items-center p-6 text-center cursor-pointer transition shadow-lg"
+                >
+                  {!showDef ? (
+                    <div>
+                      <span class="text-xs font-semibold uppercase tracking-wider text-cyan-400 mb-2 block">Key Term</span>
+                      <h3 class="text-2xl font-bold text-white">{FLASHCARDS[cardIndex].term}</h3>
+                    </div>
+                  ) : (
+                    <div>
+                      <span class="text-xs font-semibold uppercase tracking-wider text-amber-400 mb-2 block">Edexcel Definition</span>
+                      <p class="text-lg text-slate-200">{FLASHCARDS[cardIndex].def}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div class="flex justify-between items-center mt-6">
+                  <button 
+                    onClick={() => {
+                      setShowDef(false);
+                      setCardIndex((cardIndex - 1 + FLASHCARDS.length) % FLASHCARDS.length);
+                    }}
+                    class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-sm"
+                  >
+                    Previous Term
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setShowDef(false);
+                      setCardIndex((cardIndex + 1) % FLASHCARDS.length);
+                    }}
+                    class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-sm font-medium"
+                  >
+                    Next Term
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'quiz' && (
+              <div>
+                {!quizComplete ? (
+                  <div>
+                    <div class="flex justify-between items-center mb-4">
+                      <h2 class="text-lg font-semibold text-cyan-300">Question {quizIndex + 1} of {QUIZ_QUESTIONS.length}</h2>
+                      <span class="text-sm font-mono text-cyan-400">Score: {score}</span>
+                    </div>
+
+                    <p class="text-lg font-medium text-white mb-6">{QUIZ_QUESTIONS[quizIndex].q}</p>
+
+                    <div class="space-y-3 mb-6">
+                      {QUIZ_QUESTIONS[quizIndex].options.map((opt, idx) => {
+                        let btnStyle = "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700";
+                        if (selectedOpt !== null) {
+                          if (idx === QUIZ_QUESTIONS[quizIndex].answer) {
+                            btnStyle = "bg-emerald-900/80 border-emerald-500 text-emerald-200 font-semibold";
+                          } else if (idx === selectedOpt) {
+                            btnStyle = "bg-rose-900/80 border-rose-500 text-rose-200";
+                          }
+                        }
+                        return (
+                          <button 
+                            key={idx}
+                            onClick={() => handleAnswerSelect(idx)}
+                            class={`w-full text-left p-4 rounded-lg border transition ${btnStyle}`}
+                          >
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {selectedOpt !== null && (
+                      <div class="p-4 bg-slate-800 rounded-lg border border-cyan-800 mb-6">
+                        <p class="text-sm text-cyan-300"><strong>Explanation:</strong> {QUIZ_QUESTIONS[quizIndex].explain}</p>
+                      </div>
+                    )}
+
+                    {selectedOpt !== null && (
+                      <button 
+                        onClick={nextQuestion}
+                        class="w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg transition"
+                      >
+                        {quizIndex + 1 === QUIZ_QUESTIONS.length ? 'See Final Score' : 'Next Question'}
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div class="text-center py-8">
+                    <h2 class="text-3xl font-bold text-cyan-400 mb-2">Quiz Complete!</h2>
+                    <p class="text-xl text-slate-300 mb-6">You scored <span class="text-cyan-300 font-bold">{score}</span> out of {QUIZ_QUESTIONS.length}</p>
+                    <button 
+                      onClick={() => {
+                        setQuizIndex(0);
+                        setSelectedOpt(null);
+                        setScore(0);
+                        setQuizComplete(false);
+                      }}
+                      class="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg transition"
+                    >
+                      Try Quiz Again
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </main>
         </div>
       );
