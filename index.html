@@ -1,0 +1,1196 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  Clock, Play, Pause, RotateCcw, Trophy, CheckCircle, XCircle, 
+  Sparkles, Award, Zap, Layers, Grid, HelpCircle, ArrowRight, 
+  Volume2, VolumeX, Shield, HardDrive, Disc, Cpu, Cloud, RefreshCw,
+  ChevronRight, Star, BookOpen, AlertCircle, Share2
+} from 'lucide-react';
+
+// Main App Component
+export default function App() {
+  // Timer State (25 Minutes = 1500 Seconds)
+  const [timeLeft, setTimeLeft] = useState(1500);
+  const [timerActive, setTimerActive] = useState(false);
+  const [activeTab, setActiveTab] = useState('welcome');
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  // Overall Performance State
+  const [stats, setStats] = useState({
+    flashcardsMastered: 0,
+    matchingScore: 0,
+    matrixScore: 0,
+    showdownScore: 0,
+    quizScore: 0,
+    totalPoints: 0
+  });
+
+  // Countdown timer effect
+  useEffect(() => {
+    let interval = null;
+    if (timerActive && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      setTimerActive(false);
+    }
+    return () => clearInterval(interval);
+  }, [timerActive, timeLeft]);
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const resetTimer = () => {
+    setTimerActive(false);
+    setTimeLeft(1500);
+  };
+
+  const triggerVisualFeedback = (isCorrect) => {
+    if (!soundEnabled) return;
+    // Visual flash overlay can be triggered here if needed
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-900 text-slate-100 font-sans flex flex-col selection:bg-cyan-500 selection:text-white">
+      {/* Header & Navigation */}
+      <header className="bg-slate-800/90 backdrop-blur-md border-b border-slate-700 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-4">
+          
+          {/* Logo & Title */}
+          <div className="flex items-center space-x-3">
+            <div className="bg-gradient-to-tr from-cyan-500 to-blue-600 p-2.5 rounded-xl shadow-lg shadow-cyan-500/20">
+              <HardDrive className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <span className="text-xs font-semibold text-cyan-400 tracking-wider uppercase">Edexcel iGCSE CS (Topic 4.2.5 & 4.2.6)</span>
+              <h1 className="text-lg font-bold text-white leading-none">Secondary Storage Mastery</h1>
+            </div>
+          </div>
+
+          {/* Controls: Timer & Sound */}
+          <div className="flex items-center space-x-4">
+            {/* Timer Widget */}
+            <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg border text-sm font-mono transition-all ${
+              timeLeft < 300 
+                ? 'bg-rose-500/20 border-rose-500/50 text-rose-300 animate-pulse' 
+                : 'bg-slate-900/80 border-slate-700 text-cyan-300'
+            }`}>
+              <Clock className="w-4 h-4 text-cyan-400" />
+              <span className="font-bold text-base">{formatTime(timeLeft)}</span>
+              <div className="flex items-center space-x-1 ml-1 border-l border-slate-700 pl-2">
+                <button 
+                  onClick={() => setTimerActive(!timerActive)}
+                  className="p-1 hover:bg-slate-700 rounded text-slate-300 hover:text-white transition"
+                  title={timerActive ? "Pause Timer" : "Start Timer"}
+                >
+                  {timerActive ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 text-emerald-400" />}
+                </button>
+                <button 
+                  onClick={resetTimer}
+                  className="p-1 hover:bg-slate-700 rounded text-slate-300 hover:text-white transition"
+                  title="Reset Timer"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Sound Toggle */}
+            <button 
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className="p-2 bg-slate-900/80 border border-slate-700 hover:border-slate-600 rounded-lg text-slate-300 transition"
+              title={soundEnabled ? "Mute Feedback FX" : "Enable Feedback FX"}
+            >
+              {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 text-slate-500" />}
+            </button>
+
+            {/* Overall Score Badge */}
+            <div className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/40 px-3 py-1.5 rounded-lg flex items-center space-x-2">
+              <Trophy className="w-4 h-4 text-amber-400" />
+              <span className="text-sm font-bold text-amber-300">{stats.totalPoints} PTS</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-1 overflow-x-auto border-t border-slate-700/60 scrollbar-none">
+          {[
+            { id: 'welcome', label: 'Overview', icon: BookOpen },
+            { id: 'cards', label: '1. Flashcards & Match', icon: Sparkles },
+            { id: 'matrix', label: '2. Storage Matrix', icon: Grid },
+            { id: 'showdown', label: '3. 6-Criteria Showdown', icon: Zap },
+            { id: 'quiz', label: '4. Speed Quiz', icon: HelpCircle },
+            { id: 'summary', label: 'Revision Report', icon: Award }
+          ].map(tab => {
+            const Icon = tab.icon;
+            const active = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center space-x-2 px-4 py-2.5 text-sm font-medium border-b-2 whitespace-nowrap transition-all ${
+                  active 
+                    ? 'border-cyan-400 text-cyan-300 bg-cyan-950/30' 
+                    : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${active ? 'text-cyan-400' : 'text-slate-400'}`} />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {activeTab === 'welcome' && (
+          <WelcomeView 
+            setActiveTab={setActiveTab} 
+            startTimer={() => setTimerActive(true)} 
+            timerActive={timerActive}
+          />
+        )}
+        {activeTab === 'cards' && (
+          <FlashcardsAndMatch 
+            setStats={setStats} 
+            triggerVisualFeedback={triggerVisualFeedback}
+          />
+        )}
+        {activeTab === 'matrix' && (
+          <StorageMatrix 
+            setStats={setStats} 
+            triggerVisualFeedback={triggerVisualFeedback}
+          />
+        )}
+        {activeTab === 'showdown' && (
+          <CriteriaShowdown 
+            setStats={setStats} 
+            triggerVisualFeedback={triggerVisualFeedback}
+          />
+        )}
+        {activeTab === 'quiz' && (
+          <SpeedQuiz 
+            setStats={setStats} 
+            triggerVisualFeedback={triggerVisualFeedback}
+          />
+        )}
+        {activeTab === 'summary' && (
+          <SummaryCard stats={stats} resetTimer={resetTimer} />
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-slate-950 border-t border-slate-800 py-4 text-center text-xs text-slate-500">
+        <p>Edexcel iGCSE Computer Science Pre-Learning Module • Topic 4.2.5 & Topic 4.2.6 • British English Standardised</p>
+      </footer>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// OVERVIEW / WELCOME COMPONENT
+// ----------------------------------------------------------------------
+function WelcomeView({ setActiveTab, startTimer, timerActive }) {
+  return (
+    <div className="max-w-4xl mx-auto space-y-8 animate-fadeIn">
+      {/* Hero Banner */}
+      <div className="bg-gradient-to-r from-cyan-900/40 via-slate-800 to-indigo-900/40 border border-cyan-500/30 rounded-2xl p-8 relative overflow-hidden shadow-2xl">
+        <div className="absolute right-0 top-0 bottom-0 w-1/3 opacity-10 bg-repeat pointer-events-none" style={{ backgroundImage: 'radial-gradient(#00f2fe 1px, transparent 1px)', backgroundSize: '16px 16px' }}></div>
+        
+        <div className="relative z-10 max-w-2xl space-y-4">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+            Targeted 25-Minute Revision Session
+          </span>
+          <h2 className="text-3xl font-extrabold text-white sm:text-4xl tracking-tight">
+            Master Physical & Cloud Secondary Storage
+          </h2>
+          <p className="text-slate-300 text-base leading-relaxed">
+            Prepare for your live Edexcel iGCSE Computer Science lesson by mastering storage technologies: <strong className="text-cyan-400">Magnetic</strong>, <strong className="text-cyan-400">Optical</strong>, <strong className="text-cyan-400">Solid State</strong>, and <strong className="text-cyan-400">Cloud Storage</strong>.
+          </p>
+          
+          <div className="pt-2 flex flex-wrap gap-4">
+            <button
+              onClick={() => {
+                if (!timerActive) startTimer();
+                setActiveTab('cards');
+              }}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/25 flex items-center space-x-2 transition transform hover:-translate-y-0.5"
+            >
+              <span>Begin Module (Start 25m Timer)</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Module Navigation Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {[
+          {
+            title: "1. Terminology Flashcards & Matching",
+            desc: "Flip through key terms like floating gate transistors, pits & lands, and platters, then test speed in the matching arcade.",
+            tab: "cards",
+            icon: Sparkles,
+            color: "text-amber-400",
+            bg: "hover:border-amber-500/40"
+          },
+          {
+            title: "2. The Storage Matrix",
+            desc: "Categorise physical hardware traits, mechanisms, and real-world scenarios into their correct storage category.",
+            tab: "matrix",
+            icon: Grid,
+            color: "text-cyan-400",
+            bg: "hover:border-cyan-500/40"
+          },
+          {
+            title: "3. 6-Criteria Exam Showdown",
+            desc: "Evaluate storage hardware against Edexcel's key criteria: Capacity, Speed, Portability, Durability, Reliability, and Cost.",
+            tab: "showdown",
+            icon: Zap,
+            color: "text-emerald-400",
+            bg: "hover:border-emerald-500/40"
+          },
+          {
+            title: "4. Edexcel Speed Recall Quiz",
+            desc: "Answer 10 exam-style multiple-choice questions with instant scoring, feedback, and target vocabulary explanations.",
+            tab: "quiz",
+            icon: HelpCircle,
+            color: "text-purple-400",
+            bg: "hover:border-purple-500/40"
+          }
+        ].map((item, idx) => {
+          const Icon = item.icon;
+          return (
+            <div 
+              key={idx}
+              onClick={() => setActiveTab(item.tab)}
+              className={`bg-slate-800/80 border border-slate-700/80 rounded-xl p-5 cursor-pointer transition-all duration-200 ${item.bg} hover:shadow-lg hover:bg-slate-800 flex items-start space-x-4`}
+            >
+              <div className={`p-3 rounded-lg bg-slate-900 border border-slate-700 ${item.color}`}>
+                <Icon className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white text-lg mb-1">{item.title}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">{item.desc}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Syllabus Checklist */}
+      <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6">
+        <h3 className="text-md font-bold text-cyan-300 uppercase tracking-wider mb-3 flex items-center">
+          <Shield className="w-4 h-4 mr-2" /> Exam Specification Coverage
+        </h3>
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-300">
+          <li className="flex items-center space-x-2">
+            <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span><strong>4.2.5:</strong> Magnetic, Optical, and Solid State operating principles.</span>
+          </li>
+          <li className="flex items-center space-x-2">
+            <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span><strong>4.2.5:</strong> Key characteristics (Speed, Cost, Capacity, Durability, etc.).</span>
+          </li>
+          <li className="flex items-center space-x-2">
+            <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span><strong>4.2.6:</strong> Cloud storage concept, benefits, and trade-offs.</span>
+          </li>
+          <li className="flex items-center space-x-2">
+            <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span><strong>British English:</strong> Standardised spelling (e.g., megabytes, non-volatile).</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// MODE 1: FLASHCARDS & MATCHING GAME
+// ----------------------------------------------------------------------
+const TERMS_DATA = [
+  { term: "Magnetic Storage", def: "Storage medium that uses spinning platters and magnetic fields to read/write data binary bits." },
+  { term: "Optical Storage", def: "Storage medium using semiconductor lasers to read reflective pits and lands burnt into disc tracks." },
+  { term: "Solid State Storage", def: "Non-volatile storage using flash memory arrays (NAND gates) with no moving parts." },
+  { term: "Cloud Storage", def: "Data stored in logical pools hosted on remote servers accessible via internet connection." },
+  { term: "Non-volatile Memory", def: "Memory that retains stored data even when electrical power is switched off." },
+  { term: "Platters", termHighlight: "Platters", def: "Spinning circular magnetic disks inside a Hard Disk Drive (HDD)." },
+  { term: "Pits and Lands", def: "Microscopic indentations (pits) and flat surfaces (lands) on optical discs that reflect laser light." },
+  { term: "NAND Flash Memory", def: "Microchip technology trapping electrons in floating gate transistors to hold data without power." },
+  { term: "Access Speed", def: "The time taken for a storage device to locate and retrieve data for processing." },
+  { term: "Durability", def: "The ability of a storage medium to withstand physical shock, vibration, and drop damage." },
+  { term: "Portability", def: "How easily a storage device can be transported physically from one location to another." },
+  { term: "Cost per Gigabyte", def: "The relative financial expense of purchasing one unit (GB) of storage capacity." },
+  { term: "Capacity", def: "The total quantity of digital data (in MB, GB, or TB) a storage device can hold." },
+  { term: "Read/Write Head", def: "Electromagnetic arm component in HDDs that floats micro-inches above spinning platters." },
+  { term: "Floating Gate Transistors", def: "Electronic components in SSDs that trap electrical charges to represent 0s and 1s." }
+];
+
+function FlashcardsAndMatch({ setStats, triggerVisualFeedback }) {
+  const [subMode, setSubMode] = useState('flashcards'); // 'flashcards' or 'match'
+  
+  // Flashcards state
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [mastered, setMastered] = useState([]);
+  const [needPractice, setNeedPractice] = useState([]);
+
+  // Matching game state
+  const [matchCards, setMatchCards] = useState([]);
+  const [selectedCards, setSelectedCards] = useState([]);
+  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [matchScore, setMatchScore] = useState(0);
+  const [gameCompleted, setGameCompleted] = useState(false);
+
+  // Initialize matching game
+  const startMatchingGame = () => {
+    // Pick 6 random terms
+    const shuffledTerms = [...TERMS_DATA].sort(() => 0.5 - Math.random()).slice(0, 6);
+    const cards = [];
+    shuffledTerms.forEach((item, index) => {
+      cards.push({ id: `term-${index}`, text: item.term, pairId: index, type: 'term' });
+      cards.push({ id: `def-${index}`, text: item.def, pairId: index, type: 'def' });
+    });
+    // Shuffle cards
+    setMatchCards(cards.sort(() => 0.5 - Math.random()));
+    setSelectedCards([]);
+    setMatchedPairs([]);
+    setMatchScore(0);
+    setGameCompleted(false);
+  };
+
+  useEffect(() => {
+    if (subMode === 'match') {
+      startMatchingGame();
+    }
+  }, [subMode]);
+
+  // Flashcards handlers
+  const handleKnown = (known) => {
+    const currentCard = TERMS_DATA[currentIndex];
+    if (known) {
+      if (!mastered.includes(currentCard.term)) {
+        const updated = [...mastered, currentCard.term];
+        setMastered(updated);
+        setStats(prev => ({
+          ...prev,
+          flashcardsMastered: updated.length,
+          totalPoints: prev.totalPoints + 10
+        }));
+      }
+    } else {
+      if (!needPractice.includes(currentCard.term)) {
+        setNeedPractice([...needPractice, currentCard.term]);
+      }
+    }
+
+    setIsFlipped(false);
+    if (currentIndex < TERMS_DATA.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+    } else {
+      // Loop or stay
+      setCurrentIndex(0);
+    }
+  };
+
+  // Matching handlers
+  const handleCardClick = (card) => {
+    if (selectedCards.length === 2 || matchedPairs.includes(card.pairId)) return;
+    if (selectedCards.some(c => c.id === card.id)) return;
+
+    const newSelected = [...selectedCards, card];
+    setSelectedCards(newSelected);
+
+    if (newSelected.length === 2) {
+      const [first, second] = newSelected;
+      if (first.pairId === second.pairId && first.type !== second.type) {
+        // Match found!
+        triggerVisualFeedback(true);
+        const newMatched = [...matchedPairs, first.pairId];
+        setMatchedPairs(newMatched);
+        setSelectedCards([]);
+        const newScore = matchScore + 50;
+        setMatchScore(newScore);
+        setStats(prev => ({ ...prev, matchingScore: newScore, totalPoints: prev.totalPoints + 50 }));
+
+        if (newMatched.length === 6) {
+          setGameCompleted(true);
+        }
+      } else {
+        // No match
+        triggerVisualFeedback(false);
+        setTimeout(() => {
+          setSelectedCards([]);
+        }, 1000);
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Submode Selector Switch */}
+      <div className="flex justify-between items-center bg-slate-800 p-2 rounded-xl border border-slate-700">
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setSubMode('flashcards')}
+            className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center space-x-2 transition ${
+              subMode === 'flashcards' 
+                ? 'bg-cyan-500 text-white shadow-md' 
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Interactive Flashcards ({mastered.length}/{TERMS_DATA.length})</span>
+          </button>
+          <button
+            onClick={() => setSubMode('match')}
+            className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center space-x-2 transition ${
+              subMode === 'match' 
+                ? 'bg-cyan-500 text-white shadow-md' 
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Zap className="w-4 h-4" />
+            <span>Match Arcade Game</span>
+          </button>
+        </div>
+      </div>
+
+      {subMode === 'flashcards' ? (
+        <div className="max-w-2xl mx-auto space-y-6">
+          {/* Card View */}
+          <div 
+            onClick={() => setIsFlipped(!isFlipped)}
+            className={`w-full h-80 bg-slate-800/90 border-2 rounded-2xl p-8 cursor-pointer flex flex-col justify-between items-center text-center transition-all duration-300 shadow-2xl relative ${
+              isFlipped ? 'border-cyan-400 bg-slate-800' : 'border-slate-700 hover:border-slate-600'
+            }`}
+          >
+            <div className="w-full flex justify-between items-center text-xs text-slate-400">
+              <span className="font-mono">Term {currentIndex + 1} of {TERMS_DATA.length}</span>
+              <span className="text-cyan-400 font-semibold">{isFlipped ? 'Answer View' : 'Click to Flip'}</span>
+            </div>
+
+            <div className="my-auto px-4">
+              {!isFlipped ? (
+                <div className="space-y-2">
+                  <span className="text-xs font-semibold text-cyan-400 uppercase tracking-widest">Key Storage Concept</span>
+                  <h3 className="text-3xl font-extrabold text-white">{TERMS_DATA[currentIndex].term}</h3>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <span className="text-xs font-semibold text-amber-400 uppercase tracking-widest">Edexcel Definition</span>
+                  <p className="text-slate-200 text-lg leading-relaxed font-medium">
+                    {TERMS_DATA[currentIndex].def}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="text-xs text-slate-500 italic">
+              {isFlipped ? 'Tap card to flip back' : 'Tap to reveal definition'}
+            </div>
+          </div>
+
+          {/* Controls */}
+          <div className="flex space-x-4">
+            <button
+              onClick={() => handleKnown(false)}
+              className="flex-1 py-3 bg-rose-500/20 border border-rose-500/40 hover:bg-rose-500/30 text-rose-300 font-bold rounded-xl flex items-center justify-center space-x-2 transition"
+            >
+              <XCircle className="w-5 h-5" />
+              <span>Need Practice</span>
+            </button>
+            <button
+              onClick={() => handleKnown(true)}
+              className="flex-1 py-3 bg-emerald-500/20 border border-emerald-500/40 hover:bg-emerald-500/30 text-emerald-300 font-bold rounded-xl flex items-center justify-center space-x-2 transition"
+            >
+              <CheckCircle className="w-5 h-5" />
+              <span>Got It! (+10 pts)</span>
+            </button>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+            <div className="flex justify-between text-xs font-bold text-slate-400 mb-2">
+              <span>Mastery Progress</span>
+              <span>{Math.round((mastered.length / TERMS_DATA.length) * 100)}%</span>
+            </div>
+            <div className="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden">
+              <div 
+                className="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full transition-all duration-300"
+                style={{ width: `${(mastered.length / TERMS_DATA.length) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* MATCH ARCADE GAME */
+        <div className="space-y-6">
+          <div className="flex justify-between items-center bg-slate-800/60 p-4 rounded-xl border border-slate-700">
+            <div>
+              <h3 className="font-bold text-white">Terminology Match Arcade</h3>
+              <p className="text-xs text-slate-400">Match each key Edexcel term with its corresponding definition.</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-amber-400 font-mono font-bold text-lg">{matchScore} PTS</span>
+              <button 
+                onClick={startMatchingGame} 
+                className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-bold flex items-center space-x-1"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Shuffle Cards</span>
+              </button>
+            </div>
+          </div>
+
+          {gameCompleted ? (
+            <div className="bg-emerald-500/10 border border-emerald-500/40 rounded-2xl p-8 text-center space-y-4">
+              <Trophy className="w-12 h-12 text-amber-400 mx-auto" />
+              <h3 className="text-2xl font-bold text-white">Round Cleared!</h3>
+              <p className="text-slate-300 text-sm">Great recall! You've earned {matchScore} points.</p>
+              <button
+                onClick={startMatchingGame}
+                className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl"
+              >
+                Play Another Match Round
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {matchCards.map((card) => {
+                const isSelected = selectedCards.some(c => c.id === card.id);
+                const isMatched = matchedPairs.includes(card.pairId);
+
+                return (
+                  <div
+                    key={card.id}
+                    onClick={() => handleCardClick(card)}
+                    className={`p-4 rounded-xl border-2 min-h-[110px] flex items-center justify-center text-center cursor-pointer text-xs font-medium transition-all ${
+                      isMatched 
+                        ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300 opacity-40 cursor-default' 
+                        : isSelected 
+                          ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200 shadow-lg scale-95' 
+                          : 'bg-slate-800 border-slate-700 text-slate-200 hover:border-slate-500 hover:bg-slate-750'
+                    }`}
+                  >
+                    <span className={card.type === 'term' ? 'font-bold text-cyan-300 text-sm' : 'text-slate-300'}>
+                      {card.text}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// MODE 2: STORAGE MATRIX (SORTING GAME)
+// ----------------------------------------------------------------------
+const MATRIX_ITEMS = [
+  { id: 1, text: "Uses laser beams to read microscopic pits and lands", category: "optical" },
+  { id: 2, text: "High-density spinning magnetic platters with read/write heads", category: "magnetic" },
+  { id: 3, text: "NAND flash memory logic gates with trapped electron charges", category: "solid_state" },
+  { id: 4, text: "Files hosted on remote server farms via internet connection", category: "cloud" },
+  { id: 5, text: "Completely silent operation with zero moving mechanical parts", category: "solid_state" },
+  { id: 6, text: "Cheapest storage medium per disc for mass distribution of movies", category: "optical" },
+  { id: 7, text: "Best traditional bulk storage for desktop PCs (low cost per GB)", category: "magnetic" },
+  { id: 8, text: "Requires active internet connectivity for real-time access", category: "cloud" },
+  { id: 9, text: "Highly durable against physical drops, suitable for smart phones", category: "solid_state" },
+  { id: 10, text: "Vulnerable to magnetic interference and mechanical head crashes", category: "magnetic" }
+];
+
+function StorageMatrix({ setStats, triggerVisualFeedback }) {
+  const [unassignedItems, setUnassignedItems] = useState(MATRIX_ITEMS);
+  const [columns, setColumns] = useState({
+    magnetic: [],
+    optical: [],
+    solid_state: [],
+    cloud: []
+  });
+  const [activeItem, setActiveItem] = useState(null);
+  const [score, setScore] = useState(0);
+
+  const handleSelectItem = (item) => {
+    setActiveItem(activeItem?.id === item.id ? null : item);
+  };
+
+  const handleAssignToCategory = (categoryKey) => {
+    if (!activeItem) return;
+
+    // Check correctness
+    const isCorrect = activeItem.category === categoryKey;
+    triggerVisualFeedback(isCorrect);
+
+    if (isCorrect) {
+      setColumns(prev => ({
+        ...prev,
+        [categoryKey]: [...prev[categoryKey], activeItem]
+      }));
+      setUnassignedItems(prev => prev.filter(i => i.id !== activeItem.id));
+      const addedPoints = 30;
+      setScore(prev => prev + addedPoints);
+      setStats(prev => ({ ...prev, matrixScore: prev.matrixScore + addedPoints, totalPoints: prev.totalPoints + addedPoints }));
+    } else {
+      // Visual feedback error handled by triggerVisualFeedback
+    }
+    setActiveItem(null);
+  };
+
+  const resetMatrix = () => {
+    setUnassignedItems(MATRIX_ITEMS);
+    setColumns({ magnetic: [], optical: [], solid_state: [], cloud: [] });
+    setActiveItem(null);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-slate-800 p-5 rounded-xl border border-slate-700 flex flex-wrap justify-between items-center gap-4">
+        <div>
+          <h3 className="font-bold text-white text-lg">The Storage Matrix</h3>
+          <p className="text-xs text-slate-400">Select a characteristic card below, then tap the matching storage category column to sort it.</p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <span className="text-cyan-400 font-mono font-bold">{score} PTS</span>
+          <button 
+            onClick={resetMatrix}
+            className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-bold flex items-center space-x-1"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Reset Matrix</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Unassigned Cards Pool */}
+      {unassignedItems.length > 0 && (
+        <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
+          <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block mb-3">Unsorted Storage Items ({unassignedItems.length} remaining)</span>
+          <div className="flex flex-wrap gap-2">
+            {unassignedItems.map(item => (
+              <button
+                key={item.id}
+                onClick={() => handleSelectItem(item)}
+                className={`px-3 py-2 rounded-lg text-xs font-medium border text-left transition ${
+                  activeItem?.id === item.id 
+                    ? 'bg-cyan-500 border-cyan-300 text-slate-950 font-bold scale-105 shadow-md' 
+                    : 'bg-slate-800 border-slate-700 text-slate-200 hover:border-slate-500'
+                }`}
+              >
+                {item.text}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Matrix Categories Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { key: 'magnetic', title: 'Magnetic Storage', icon: HardDrive, color: 'text-amber-400', border: 'border-amber-500/30' },
+          { key: 'optical', title: 'Optical Storage', icon: Disc, color: 'text-cyan-400', border: 'border-cyan-500/30' },
+          { key: 'solid_state', title: 'Solid State (SSD)', icon: Cpu, color: 'text-emerald-400', border: 'border-emerald-500/30' },
+          { key: 'cloud', title: 'Cloud Storage', icon: Cloud, color: 'text-purple-400', border: 'border-purple-500/30' }
+        ].map(cat => {
+          const Icon = cat.icon;
+          const assigned = columns[cat.key];
+          return (
+            <div
+              key={cat.key}
+              onClick={() => handleAssignToCategory(cat.key)}
+              className={`bg-slate-800/80 border-2 rounded-xl p-4 flex flex-col justify-between min-h-[220px] transition cursor-pointer ${
+                activeItem ? 'hover:border-cyan-400 hover:bg-slate-800' : ''
+              } ${cat.border}`}
+            >
+              <div>
+                <div className="flex items-center space-x-2 border-b border-slate-700 pb-2 mb-3">
+                  <Icon className={`w-5 h-5 ${cat.color}`} />
+                  <h4 className="font-bold text-white text-sm">{cat.title}</h4>
+                </div>
+
+                <div className="space-y-2">
+                  {assigned.map(item => (
+                    <div key={item.id} className="bg-slate-900/90 border border-slate-700 p-2 rounded text-xs text-slate-300 flex items-start space-x-2">
+                      <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                      <span>{item.text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {activeItem && (
+                <div className="mt-4 py-2 bg-cyan-500/10 border border-cyan-500/30 rounded text-center text-xs font-bold text-cyan-300">
+                  Tap to place here
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// MODE 3: 6-CRITERIA EXAM SHOWDOWN
+// ----------------------------------------------------------------------
+const SCENARIOS = [
+  {
+    id: 1,
+    title: "Action Sports Helmet Camera",
+    context: "Recording 4K video while snowboarding or mountain biking down steep terrain.",
+    priority: "Durability & Compact Size",
+    correct: "solid_state",
+    explanation: "Solid state (e.g. MicroSD) has zero moving parts, making it drop-resistant and light enough for extreme motion."
+  },
+  {
+    id: 2,
+    title: "Commercial Film Distribution",
+    context: "Distributing physical copies of a new movie release to retail stores across the UK.",
+    titleHighlight: "Film Distribution",
+    priority: "Low Unit Cost & Easy Mass Production",
+    correct: "optical",
+    explanation: "Blu-ray optical discs are extremely cheap to manufacture per disc for mass physical distribution."
+  },
+  {
+    id: 3,
+    title: "Enterprise Server Data Backup",
+    context: "Archiving massive multi-terabyte database backups nightly inside a company server room.",
+    priority: "High Capacity & Lowest Cost per GB",
+    correct: "magnetic",
+    explanation: "Magnetic storage (HDDs or magnetic tapes) offers the lowest financial cost per terabyte for high-volume storage."
+  },
+  {
+    id: 4,
+    title: "Collaborative Student Project",
+    context: "Multiple students editing a joint Computer Science report simultaneously from home.",
+    priority: "Accessibility & Real-time Sharing",
+    correct: "cloud",
+    explanation: "Cloud storage enables instant online file synchronization and multi-user collaboration across remote locations."
+  }
+];
+
+function CriteriaShowdown({ setStats, triggerVisualFeedback }) {
+  const [scenarioIndex, setScenarioIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showdownScore, setShowdownScore] = useState(0);
+
+  const current = SCENARIOS[scenarioIndex];
+
+  const handleSelect = (key) => {
+    if (isSubmitted) return;
+    setSelectedOption(key);
+  };
+
+  const handleSubmit = () => {
+    if (!selectedOption || isSubmitted) return;
+    setIsSubmitted(true);
+    const isCorrect = selectedOption === current.correct;
+    triggerVisualFeedback(isCorrect);
+
+    if (isCorrect) {
+      const pts = 40;
+      setShowdownScore(prev => prev + pts);
+      setStats(prev => ({ ...prev, showdownScore: prev.showdownScore + pts, totalPoints: prev.totalPoints + pts }));
+    }
+  };
+
+  const handleNext = () => {
+    setSelectedOption(null);
+    setIsSubmitted(false);
+    if (scenarioIndex < SCENARIOS.length - 1) {
+      setScenarioIndex(prev => prev + 1);
+    } else {
+      setScenarioIndex(0);
+    }
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-6">
+      <div className="bg-slate-800 p-5 rounded-xl border border-slate-700 flex justify-between items-center">
+        <div>
+          <h3 className="font-bold text-white text-lg">6-Criteria Exam Showdown</h3>
+          <p className="text-xs text-slate-400">Evaluate real-world scenarios using Edexcel's key criteria (Capacity, Speed, Portability, Durability, Reliability, Cost).</p>
+        </div>
+        <div className="text-right">
+          <span className="text-emerald-400 font-mono font-bold">{showdownScore} PTS</span>
+          <span className="block text-xs text-slate-500">Scenario {scenarioIndex + 1} of {SCENARIOS.length}</span>
+        </div>
+      </div>
+
+      {/* Scenario Card */}
+      <div className="bg-slate-800/90 border border-slate-700 rounded-2xl p-6 space-y-4">
+        <div className="space-y-1">
+          <span className="text-xs font-semibold text-cyan-400 uppercase tracking-widest">Scenario Specification</span>
+          <h4 className="text-2xl font-bold text-white">{current.title}</h4>
+          <p className="text-slate-300 text-sm">{current.context}</p>
+        </div>
+
+        <div className="bg-slate-900 p-3 rounded-lg border border-slate-700/80 flex items-center space-x-2">
+          <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+          <span className="text-xs font-semibold text-amber-300">Key Priority Criterion: {current.priority}</span>
+        </div>
+
+        {/* Options */}
+        <div className="grid grid-cols-2 gap-3 pt-2">
+          {[
+            { key: 'magnetic', label: 'Magnetic Storage (HDD)', icon: HardDrive },
+            { key: 'optical', label: 'Optical Storage (Disc)', icon: Disc },
+            { key: 'solid_state', label: 'Solid State (SSD/Flash)', icon: Cpu },
+            { key: 'cloud', label: 'Cloud Storage', icon: Cloud }
+          ].map(opt => {
+            const Icon = opt.icon;
+            const isSelected = selectedOption === opt.key;
+            let btnStyle = "bg-slate-900 border-slate-700 text-slate-200 hover:border-slate-500";
+
+            if (isSubmitted) {
+              if (opt.key === current.correct) {
+                btnStyle = "bg-emerald-500/20 border-emerald-500 text-emerald-300 font-bold";
+              } else if (isSelected) {
+                btnStyle = "bg-rose-500/20 border-rose-500 text-rose-300";
+              }
+            } else if (isSelected) {
+              btnStyle = "bg-cyan-500/20 border-cyan-400 text-cyan-200 font-bold";
+            }
+
+            return (
+              <button
+                key={opt.key}
+                onClick={() => handleSelect(opt.key)}
+                className={`p-4 rounded-xl border flex items-center space-x-3 text-sm transition ${btnStyle}`}
+              >
+                <Icon className="w-5 h-5 shrink-0" />
+                <span className="text-left">{opt.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Submit & Explanation */}
+        {!isSubmitted ? (
+          <button
+            onClick={handleSubmit}
+            disabled={!selectedOption}
+            className={`w-full py-3 rounded-xl font-bold transition ${
+              selectedOption 
+                ? 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-lg' 
+                : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+            }`}
+          >
+            Confirm Decision
+          </button>
+        ) : (
+          <div className="space-y-4 pt-2">
+            <div className={`p-4 rounded-xl border ${
+              selectedOption === current.correct 
+                ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-200' 
+                : 'bg-rose-500/10 border-rose-500/40 text-rose-200'
+            }`}>
+              <div className="flex items-center space-x-2 font-bold mb-1">
+                {selectedOption === current.correct ? <CheckCircle className="w-5 h-5 text-emerald-400" /> : <XCircle className="w-5 h-5 text-rose-400" />}
+                <span>{selectedOption === current.correct ? 'Correct Selection! (+40 pts)' : 'Incorrect Medium'}</span>
+              </div>
+              <p className="text-xs leading-relaxed">{current.explanation}</p>
+            </div>
+
+            <button
+              onClick={handleNext}
+              className="w-full py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl flex items-center justify-center space-x-2"
+            >
+              <span>Next Scenario</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// MODE 4: SPEED RECALL QUIZ (EDEXCEL iGCSE STYLE)
+// ----------------------------------------------------------------------
+const QUIZ_QUESTIONS = [
+  {
+    q: "Which of the following is a non-volatile optical storage medium?",
+    options: ["RAM", "Blu-ray Disc", "USB Flash Drive", "Cache Memory"],
+    answer: 1,
+    vocab: "Optical Storage",
+    explanation: "Blu-ray discs are non-volatile optical storage media that use laser light to read data burnt onto reflective tracks."
+  },
+  {
+    q: "What physical component stores binary data in a Solid State Drive (SSD)?",
+    options: ["Spinning magnetic platters", "Floating gate transistors", "Microscopic pit spirals", "Reflective aluminum film"],
+    answer: 1,
+    vocab: "Floating Gate Transistors",
+    explanation: "SSDs use flash memory chips containing floating gate transistors that trap electrical charges to hold binary bits."
+  },
+  {
+    q: "Why is Solid State storage preferred over Magnetic storage for portable laptops?",
+    options: ["SSDs have a lower cost per gigabyte", "SSDs have zero moving parts and higher durability", "SSDs offer infinite capacity", "SSDs use laser tracks"],
+    answer: 1,
+    vocab: "Durability & Moving Parts",
+    explanation: "Because SSDs have no moving mechanical parts, they withstand shocks and drops much better than magnetic HDDs."
+  },
+  {
+    q: "How is a binary '0' or '1' read from an optical disc surface?",
+    options: ["By measuring magnetic field polarity", "By calculating electron voltage", "By measuring light reflection off pits and lands", "By spinning platters at 7200 RPM"],
+    answer: 2,
+    vocab: "Pits and Lands",
+    explanation: "A laser sensor detects differences in light reflection when light strikes microscopic pits versus flat lands."
+  },
+  {
+    q: "Which storage solution relies on remote third-party data centres accessed via the internet?",
+    options: ["Magnetic Tape", "Solid State Drive", "Cloud Storage", "ROM Firmware"],
+    answer: 2,
+    vocab: "Cloud Storage",
+    explanation: "Cloud storage saves data in remote logical server pools accessible over internet infrastructure."
+  },
+  {
+    q: "Which characteristic makes Magnetic Hard Disk Drives (HDDs) popular for server backups?",
+    options: ["Low cost per gigabyte and high storage capacity", "High physical shock resistance", "Instant zero-latency access", "Smallest physical footprint"],
+    answer: 0,
+    vocab: "Cost per GB & Capacity",
+    explanation: "HDDs offer low financial cost per unit of storage, making high-capacity bulk backups affordable."
+  },
+  {
+    q: "What is a main disadvantage of relying solely on Cloud Storage?",
+    options: ["Data is erased when computer power is switched off", "Requires an active internet connection to access files", "Physical discs can scratch easily", "Contains spinning parts"],
+    answer: 1,
+    vocab: "Cloud Disadvantage",
+    explanation: "Cloud storage requires stable internet bandwidth; without connectivity, stored files cannot be retrieved."
+  },
+  {
+    q: "What component moves across spinning platters in a Hard Disk Drive?",
+    options: ["Laser diode", "Read/write electromagnetic head", "Trapped NAND gate", "Reflective spiral arm"],
+    answer: 1,
+    vocab: "Read/Write Head",
+    explanation: "An electromagnetic read/write head floats just micro-inches above spinning magnetic platters."
+  },
+  {
+    q: "Which storage technology is completely silent during operation?",
+    options: ["Magnetic HDD", "Solid State Drive (SSD)", "Optical CD-ROM Drive", "Tape Storage"],
+    answer: 1,
+    vocab: "Solid State Storage",
+    explanation: "SSDs rely entirely on electronic microchip circuitry without any moving parts, making them totally silent."
+  },
+  {
+    q: "Which unit represents 1,000 Megabytes (MB) in standard metric decimal storage?",
+    options: ["1 Terabyte (TB)", "1 Gigabyte (GB)", "1 Kilobyte (KB)", "1 Petabyte (PB)"],
+    answer: 1,
+    vocab: "Storage Capacity Units",
+    explanation: "1 Gigabyte (GB) equals 1,000 Megabytes (MB) in metric decimal storage measurements."
+  }
+];
+
+function SpeedQuiz({ setStats, triggerVisualFeedback }) {
+  const [qIndex, setQIndex] = useState(0);
+  const [selectedOpt, setSelectedOpt] = useState(null);
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [quizScore, setQuizScore] = useState(0);
+
+  const q = QUIZ_QUESTIONS[qIndex];
+
+  const handleSelectOption = (index) => {
+    if (quizSubmitted) return;
+    setSelectedOpt(index);
+  };
+
+  const handleConfirmAnswer = () => {
+    if (selectedOpt === null || quizSubmitted) return;
+    setQuizSubmitted(true);
+
+    const isCorrect = selectedOpt === q.answer;
+    triggerVisualFeedback(isCorrect);
+
+    if (isCorrect) {
+      const addedPoints = 50;
+      setQuizScore(prev => prev + addedPoints);
+      setStats(prev => ({
+        ...prev,
+        quizScore: prev.quizScore + addedPoints,
+        totalPoints: prev.totalPoints + addedPoints
+      }));
+    }
+  };
+
+  const handleNextQuestion = () => {
+    setSelectedOpt(null);
+    setQuizSubmitted(false);
+    if (qIndex < QUIZ_QUESTIONS.length - 1) {
+      setQIndex(prev => prev + 1);
+    }
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-6">
+      <div className="bg-slate-800 p-5 rounded-xl border border-slate-700 flex justify-between items-center">
+        <div>
+          <h3 className="font-bold text-white text-lg">Speed Recall Quiz</h3>
+          <p className="text-xs text-slate-400">Edexcel iGCSE style multiple-choice questions.</p>
+        </div>
+        <div className="text-right">
+          <span className="text-purple-400 font-mono font-bold text-lg">{quizScore} PTS</span>
+          <span className="block text-xs text-slate-500">Question {qIndex + 1} of {QUIZ_QUESTIONS.length}</span>
+        </div>
+      </div>
+
+      <div className="bg-slate-800/90 border border-slate-700 rounded-2xl p-6 space-y-6">
+        <div className="space-y-2">
+          <span className="text-xs font-bold text-purple-400 uppercase tracking-widest">Key Concept: {q.vocab}</span>
+          <h4 className="text-xl font-bold text-white leading-snug">{q.q}</h4>
+        </div>
+
+        <div className="space-y-3">
+          {q.options.map((opt, i) => {
+            let style = "bg-slate-900 border-slate-700 text-slate-200 hover:border-slate-500";
+
+            if (quizSubmitted) {
+              if (i === q.answer) {
+                style = "bg-emerald-500/20 border-emerald-500 text-emerald-300 font-bold";
+              } else if (selectedOpt === i) {
+                style = "bg-rose-500/20 border-rose-500 text-rose-300";
+              }
+            } else if (selectedOpt === i) {
+              style = "bg-purple-500/20 border-purple-400 text-purple-200 font-bold";
+            }
+
+            return (
+              <button
+                key={i}
+                onClick={() => handleSelectOption(i)}
+                className={`w-full p-4 rounded-xl border text-left text-sm transition flex items-center justify-between ${style}`}
+              >
+                <span>{opt}</span>
+                {quizSubmitted && i === q.answer && <CheckCircle className="w-4 h-4 text-emerald-400" />}
+                {quizSubmitted && selectedOpt === i && i !== q.answer && <XCircle className="w-4 h-4 text-rose-400" />}
+              </button>
+            );
+          })}
+        </div>
+
+        {!quizSubmitted ? (
+          <button
+            onClick={handleConfirmAnswer}
+            disabled={selectedOpt === null}
+            className={`w-full py-3 rounded-xl font-bold transition ${
+              selectedOpt !== null 
+                ? 'bg-purple-500 hover:bg-purple-400 text-slate-950 shadow-lg' 
+                : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+            }`}
+          >
+            Submit Answer
+          </button>
+        ) : (
+          <div className="space-y-4">
+            <div className={`p-4 rounded-xl border text-xs leading-relaxed ${
+              selectedOpt === q.answer 
+                ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-200' 
+                : 'bg-rose-500/10 border-rose-500/40 text-rose-200'
+            }`}>
+              <strong className="block font-bold mb-1">Exam Feedback:</strong>
+              {q.explanation}
+            </div>
+
+            {qIndex < QUIZ_QUESTIONS.length - 1 ? (
+              <button
+                onClick={handleNextQuestion}
+                className="w-full py-3 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl flex items-center justify-center space-x-2"
+              >
+                <span>Next Question</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            ) : (
+              <div className="text-center p-4 bg-purple-500/10 border border-purple-500/30 rounded-xl">
+                <span className="font-bold text-purple-300 block mb-1">Quiz Completed!</span>
+                <p className="text-xs text-slate-400">Head over to the Revision Report tab to view your performance summary.</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// REVISION SUMMARY CARD COMPONENT
+// ----------------------------------------------------------------------
+function SummaryCard({ stats, resetTimer }) {
+  return (
+    <div className="max-w-3xl mx-auto space-y-6 animate-fadeIn">
+      <div className="bg-gradient-to-r from-cyan-900/40 via-slate-800 to-indigo-900/40 border border-cyan-500/30 rounded-2xl p-6 text-center space-y-3 shadow-xl">
+        <Award className="w-12 h-12 text-amber-400 mx-auto" />
+        <h2 className="text-3xl font-extrabold text-white">Pre-Learning Revision Summary</h2>
+        <p className="text-slate-300 text-sm max-w-xl mx-auto">
+          Here is your preparation report for Edexcel iGCSE Computer Science Secondary Storage (Topic 4.2.5 & 4.2.6).
+        </p>
+
+        <div className="inline-flex items-center px-4 py-2 bg-amber-500/20 border border-amber-500/40 rounded-full text-amber-300 font-bold text-lg">
+          Total Score: {stats.totalPoints} PTS
+        </div>
+      </div>
+
+      {/* Breakdown Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl space-y-2">
+          <div className="flex items-center space-x-2 text-cyan-400 font-bold">
+            <Sparkles className="w-5 h-5" />
+            <span>Flashcards Mastered</span>
+          </div>
+          <p className="text-3xl font-extrabold text-white">{stats.flashcardsMastered} / {TERMS_DATA.length}</p>
+          <p className="text-xs text-slate-400">Key terms reviewed for exam recall.</p>
+        </div>
+
+        <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl space-y-2">
+          <div className="flex items-center space-x-2 text-amber-400 font-bold">
+            <Zap className="w-5 h-5" />
+            <span>Matching Arcade</span>
+          </div>
+          <p className="text-3xl font-extrabold text-white">{stats.matchingScore} PTS</p>
+          <p className="text-xs text-slate-400">Points earned in speed definition pairing.</p>
+        </div>
+
+        <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl space-y-2">
+          <div className="flex items-center space-x-2 text-emerald-400 font-bold">
+            <Grid className="w-5 h-5" />
+            <span>Storage Matrix</span>
+          </div>
+          <p className="text-3xl font-extrabold text-white">{stats.matrixScore} PTS</p>
+          <p className="text-xs text-slate-400">Points earned sorting hardware traits.</p>
+        </div>
+
+        <div className="bg-slate-800 border border-slate-700 p-5 rounded-xl space-y-2">
+          <div className="flex items-center space-x-2 text-purple-400 font-bold">
+            <HelpCircle className="w-5 h-5" />
+            <span>Speed Quiz Score</span>
+          </div>
+          <p className="text-3xl font-extrabold text-white">{stats.quizScore} PTS</p>
+          <p className="text-xs text-slate-400">Points from exam-style questions.</p>
+        </div>
+      </div>
+
+      {/* Key Takeaway Reminders */}
+      <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-6 space-y-3">
+        <h3 className="font-bold text-white text-base flex items-center">
+          <BookOpen className="w-4 h-4 mr-2 text-cyan-400" /> Live Lesson Key Takeaways
+        </h3>
+        <ul className="text-xs text-slate-300 space-y-2 list-disc pl-5">
+          <li><strong>Magnetic:</strong> Platters, read/write head, high capacity, cheap per GB, fragile.</li>
+          <li><strong>Optical:</strong> Lasers, pits and lands, disc spiral track, highly portable, cheap per disc.</li>
+          <li><strong>Solid State:</strong> Flash memory, floating gate transistors, no moving parts, fast, durable.</li>
+          <li><strong>Cloud Storage:</strong> Data stored on remote servers over internet; accessible anywhere but requires network.</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
