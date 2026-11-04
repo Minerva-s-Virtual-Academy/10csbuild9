@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Secondary Storage Mastery - iGCSE Computer Science</title>
+  <title>Secondary Storage & Virtual Memory - iGCSE Computer Science</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -22,32 +22,178 @@
     const { useState, useEffect } = React;
 
     const FLASHCARDS = [
-      { id: 1, term: "Platters", def: "Circular magnetic disks inside an HDD that spin at high speeds to store data magnetically." },
-      { id: 2, term: "Pits and Lands", def: "Microscopic indents and flat areas on optical discs that reflect laser light differently to represent 0s and 1s." },
-      { id: 3, term: "Flash Memory", def: "Solid-state non-volatile technology using semiconductor floating-gate transistors to trap electric charge." },
-      { id: 4, term: "Non-Volatile", def: "Memory that retains stored data even when the electrical power is turned off." },
-      { id: 5, term: "Cloud Storage", def: "Data stored on remote servers accessed via the internet, managed by third-party providers." },
-      { id: 6, term: "Embedded System", def: "A dedicated computer system with a fixed single function built into a larger mechanical/electrical device." }
+      { 
+        id: 1, 
+        term: "Magnetic Hard Disk Drive (HDD)", 
+        def: "Contains circular magnetic platters that spin at high speeds (e.g., 7200 RPM). A read/write head moves across concentric tracks divided into sectors to detect and change the magnetic polarity of tiny areas representing binary 0s and 1s." 
+      },
+      { 
+        id: 2, 
+        term: "Concentric Tracks & Sectors", 
+        def: "Magnetic platters are formatted into concentric circular rings called 'tracks', which are further sub-divided into wedge-shaped 'sectors'. Data is stored in these specific physical sector addresses." 
+      },
+      { 
+        id: 3, 
+        term: "Read/Write Head (Magnetic)", 
+        def: "A tiny electromagnetic arm that floats microscopic distances above the spinning platter surface to read or alter magnetic fields (changing polarity to flip bits between 0 and 1)." 
+      },
+      { 
+        id: 4, 
+        term: "Optical Storage Mechanics (CDs/DVDs)", 
+        def: "Data is written in a continuous spiral track using microscopic 'pits' (bumps/dips) and 'lands' (flat areas). A laser shines onto the reflective surface to read light scattering." 
+      },
+      { 
+        id: 5, 
+        term: "Pits and Lands", 
+        def: "The physical features on an optical disc track. When a laser transitions between a pit and a land, the reflected light scatters, generating a change in sensor current translated as binary 1s and 0s." 
+      },
+      { 
+        id: 6, 
+        term: "Solid State Drive (SSD) / Flash", 
+        def: "Non-volatile storage using arrays of NAND logic gates and floating-gate transistors. Electrons are trapped inside the gates to hold charge without moving parts, making them durable, fast, and quiet." 
+      },
+      { 
+        id: 7, 
+        term: "Floating-Gate Transistors", 
+        def: "The electronic logic gate components used in SSDs and USB sticks. They store electrical charge indefinitely, representing binary state (0 = charged, 1 = discharged) even when power is turned off." 
+      },
+      { 
+        id: 8, 
+        term: "Non-Volatile Memory", 
+        def: "Secondary storage memory that retains its stored data permanently even when electrical power is switched off (e.g., HDDs, SSDs, Optical Discs)." 
+      },
+      { 
+        id: 9, 
+        term: "Cloud Storage", 
+        def: "Data stored remotely on physical servers located in third-party data centres, accessed over the internet. Offers global accessibility, collaboration, and automated backups." 
+      },
+      { 
+        id: 10, 
+        term: "Virtual Memory", 
+        def: "A section of secondary storage (e.g., HDD/SSD) temporarily allocated to act as extension RAM when physical RAM becomes completely full." 
+      },
+      { 
+        id: 11, 
+        term: "Paging & Swapping", 
+        def: "The process of dividing RAM into fixed-size blocks ('pages') and moving inactive data back and forth between physical RAM and virtual memory on the secondary storage drive." 
+      },
+      { 
+        id: 12, 
+        term: "Disk Thrashing", 
+        def: "A severe performance drop occurring when the computer spends more time constantly swapping pages between RAM and Virtual Memory on secondary storage than executing instructions." 
+      }
     ];
 
     const QUIZ_QUESTIONS = [
       {
-        q: "Why are SSDs preferred over HDDs for portable laptops?",
-        options: ["They use spinning platters", "They have no moving parts and high durability", "They are cheaper per GB", "They use optical lasers"],
+        q: "How does a magnetic hard disk drive (HDD) write binary data to a platter?",
+        options: [
+          "It burns microscopic pits using a high-power laser",
+          "A read/write head changes the magnetic polarity of tiny areas on spinning sectors",
+          "It traps electrons inside floating-gate logic transistors",
+          "It changes the electric voltage of volatile capacitor cells"
+        ],
         answer: 1,
-        explain: "SSDs have no moving parts, making them far more resistant to physical drops and shock."
+        explain: "HDDs use a read/write head that floats above spinning platters to detect and alter magnetic polarity on concentric tracks divided into sectors."
       },
       {
-        q: "Which property describes memory that retains data when power is lost?",
-        options: ["Volatile", "Cache memory", "Non-volatile", "RAM"],
+        q: "In an optical disc like a CD, how are binary 0s and 1s read by the optical drive?",
+        options: [
+          "By detecting electrical charge inside floating gates",
+          "By measuring the spinning speed of concentric sectors",
+          "By measuring laser light reflection differences off microscopic pits and lands",
+          "By physically touching tiny grooves with a stylus needle"
+        ],
         answer: 2,
-        explain: "Secondary storage must be non-volatile so your files remain safe when turned off."
+        explain: "A laser shines light onto the disc track; transitions between flat lands and etched pits scatter light differently to register binary bits."
       },
       {
-        q: "What physical feature on a CD-ROM reflects laser light to read data?",
-        options: ["Floating gates", "Pits and Lands", "Magnetic domains", "Read/Write heads"],
+        q: "Which underlying electronic components allow Solid State Drives (SSDs) to store data without moving parts?",
+        options: [
+          "Magnetic sectors and read/write arms",
+          "Pits, lands, and reflective foil tracks",
+          "NAND logic gates and floating-gate transistors",
+          "Rotating optical prisms and photodiode sensors"
+        ],
+        answer: 2,
+        explain: "SSDs use arrays of NAND flash memory containing floating-gate transistors that trap electrical charges."
+      },
+      {
+        q: "Why are SSDs considered more durable than traditional HDDs for portable laptops?",
+        options: [
+          "SSDs contain no moving parts to break if dropped",
+          "SSDs have larger spinning platters",
+          "SSDs use optical lasers that never wear out",
+          "SSDs require no electrical power at all"
+        ],
+        answer: 0,
+        explain: "Because SSDs have no moving mechanical components (unlike spinning HDD platters or optical arms), physical drops and shocks rarely cause drive failure."
+      },
+      {
+        q: "What is Virtual Memory and when is it required by the Operating System?",
+        options: [
+          "Remote internet storage used when local drive space runs out",
+          "A portion of secondary storage used as temporary extension RAM when physical RAM is full",
+          "High-speed CPU cache used to speed up graphics processing",
+          "A permanent backup stored on magnetic tape"
+        ],
         answer: 1,
-        explain: "Lasers detect light reflections from microscopic pits and lands etched on the disc."
+        explain: "Virtual memory uses secondary storage (HDD/SSD) as fake RAM when real physical RAM becomes exhausted from running too many programs."
+      },
+      {
+        q: "How are magnetic hard drive platters physically organized to locate stored files?",
+        options: [
+          "Into one single continuous spiral track",
+          "Into floating gates and trapped electron arrays",
+          "Into concentric circular tracks divided into wedge-shaped sectors",
+          "Into unstructured optical blocks"
+        ],
+        answer: 2,
+        explain: "Platters are formatted into concentric rings called tracks, which are subdivided into sectors holding discrete blocks of data."
+      },
+      {
+        q: "What performance issue occurs when a system constantly moves data between RAM and Virtual Memory?",
+        options: [
+          "Laser scattering",
+          "Disk Thrashing",
+          "Magnetic Polarity Inversion",
+          "Solid State Overclocking"
+        ],
+        answer: 1,
+        explain: "Disk thrashing happens when the OS spends more time constantly swapping pages to secondary storage than running actual application instructions."
+      },
+      {
+        q: "Which of the following describes a key disadvantage of Cloud Storage?",
+        options: [
+          "Files cannot be shared with other users easily",
+          "It relies entirely on a reliable internet connection to access remote files",
+          "It uses physical moving platters that easily break during travel",
+          "Data is wiped every time the remote server powers off"
+        ],
+        answer: 1,
+        explain: "Cloud storage stores files on remote third-party data centre servers; without a steady internet connection, files cannot be retrieved."
+      },
+      {
+        q: "What happens to the electrical charge inside an SSD's floating-gate transistor when the computer is turned off?",
+        options: [
+          "The charge leaks instantly, causing data loss",
+          "The charge remains trapped, making it non-volatile secondary storage",
+          "The charge converts into magnetic fields",
+          "The charge is automatically moved to the CPU cache"
+        ],
+        answer: 1,
+        explain: "Floating gates trap electrons securely inside semiconductor barriers so the binary data is retained permanently without power (non-volatile)."
+      },
+      {
+        q: "What unit of data movement is swapped between RAM and Virtual Memory during paging?",
+        options: [
+          "Pits",
+          "Sectors",
+          "Fixed-size blocks called Pages",
+          "Magnetic platters"
+        ],
+        answer: 2,
+        explain: "The OS divides memory into fixed-size blocks called 'Pages' and moves inactive pages to the paging file on secondary storage."
       }
     ];
 
@@ -104,8 +250,8 @@
           {/* Header */}
           <header class="border-b border-cyan-800 pb-4 mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-              <h1 class="text-2xl sm:text-3xl font-bold text-cyan-400">Secondary Storage Mastery</h1>
-              <p class="text-slate-400 text-sm">Edexcel iGCSE CS (Topic 4.2.5 & 4.2.6)</p>
+              <h1 class="text-2xl sm:text-3xl font-bold text-cyan-400">Secondary Storage & Virtual Memory</h1>
+              <p class="text-slate-400 text-sm">Edexcel iGCSE CS (Topics 4.2.5, 4.2.6 & Virtual Memory)</p>
             </div>
             <div class="flex items-center space-x-3 bg-slate-900 p-3 rounded-lg border border-slate-800 self-start sm:self-auto">
               <span class="text-2xl font-mono text-cyan-300">{formatTime(timeLeft)}</span>
@@ -124,13 +270,13 @@
               onClick={() => setActiveTab('flashcards')}
               class={`px-4 py-2 rounded-lg font-medium text-sm transition whitespace-nowrap ${activeTab === 'flashcards' ? 'bg-cyan-600 text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800'}`}
             >
-              1. Key Term Flashcards
+              1. Key Term Flashcards ({FLASHCARDS.length})
             </button>
             <button 
               onClick={() => setActiveTab('quiz')}
               class={`px-4 py-2 rounded-lg font-medium text-sm transition whitespace-nowrap ${activeTab === 'quiz' ? 'bg-cyan-600 text-white' : 'bg-slate-900 text-slate-400 hover:bg-slate-800'}`}
             >
-              2. Speed Check Quiz
+              2. Exam Recall Quiz ({QUIZ_QUESTIONS.length} Questions)
             </button>
           </div>
 
@@ -140,124 +286,25 @@
               <div>
                 <div class="flex justify-between items-center mb-4">
                   <h2 class="text-lg font-semibold text-cyan-300">Term {cardIndex + 1} of {FLASHCARDS.length}</h2>
-                  <span class="text-xs text-slate-400">Click card to flip</span>
+                  <span class="text-xs text-slate-400">Click box to flip definition</span>
                 </div>
 
                 <div 
                   onClick={() => setShowDef(!showDef)}
-                  class="min-h-[200px] bg-slate-800 rounded-xl border-2 border-cyan-500/30 hover:border-cyan-400 flex flex-col justify-center items-center p-6 text-center cursor-pointer transition shadow-lg"
+                  class="min-h-[220px] bg-slate-800 rounded-xl border-2 border-cyan-500/30 hover:border-cyan-400 flex flex-col justify-center items-center p-6 text-center cursor-pointer transition shadow-lg"
                 >
                   {!showDef ? (
                     <div>
-                      <span class="text-xs font-semibold uppercase tracking-wider text-cyan-400 mb-2 block">Key Term</span>
-                      <h3 class="text-2xl font-bold text-white">{FLASHCARDS[cardIndex].term}</h3>
+                      <span class="text-xs font-semibold uppercase tracking-wider text-cyan-400 mb-2 block">Key Exam Term</span>
+                      <h3 class="text-2xl font-bold text-white mb-2">{FLASHCARDS[cardIndex].term}</h3>
+                      <p class="text-xs text-slate-400 italic">(Tap to inspect mechanical & operating details)</p>
                     </div>
                   ) : (
                     <div>
-                      <span class="text-xs font-semibold uppercase tracking-wider text-amber-400 mb-2 block">Edexcel Definition</span>
-                      <p class="text-lg text-slate-200">{FLASHCARDS[cardIndex].def}</p>
+                      <span class="text-xs font-semibold uppercase tracking-wider text-amber-400 mb-2 block">Edexcel Technical Explanation</span>
+                      <p class="text-base sm:text-lg text-slate-200 leading-relaxed">{FLASHCARDS[cardIndex].def}</p>
                     </div>
                   )}
                 </div>
 
-                <div class="flex justify-between items-center mt-6">
-                  <button 
-                    onClick={() => {
-                      setShowDef(false);
-                      setCardIndex((cardIndex - 1 + FLASHCARDS.length) % FLASHCARDS.length);
-                    }}
-                    class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-sm"
-                  >
-                    Previous Term
-                  </button>
-                  <button 
-                    onClick={() => {
-                      setShowDef(false);
-                      setCardIndex((cardIndex + 1) % FLASHCARDS.length);
-                    }}
-                    class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-sm font-medium"
-                  >
-                    Next Term
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'quiz' && (
-              <div>
-                {!quizComplete ? (
-                  <div>
-                    <div class="flex justify-between items-center mb-4">
-                      <h2 class="text-lg font-semibold text-cyan-300">Question {quizIndex + 1} of {QUIZ_QUESTIONS.length}</h2>
-                      <span class="text-sm font-mono text-cyan-400">Score: {score}</span>
-                    </div>
-
-                    <p class="text-lg font-medium text-white mb-6">{QUIZ_QUESTIONS[quizIndex].q}</p>
-
-                    <div class="space-y-3 mb-6">
-                      {QUIZ_QUESTIONS[quizIndex].options.map((opt, idx) => {
-                        let btnStyle = "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700";
-                        if (selectedOpt !== null) {
-                          if (idx === QUIZ_QUESTIONS[quizIndex].answer) {
-                            btnStyle = "bg-emerald-900/80 border-emerald-500 text-emerald-200 font-semibold";
-                          } else if (idx === selectedOpt) {
-                            btnStyle = "bg-rose-900/80 border-rose-500 text-rose-200";
-                          }
-                        }
-                        return (
-                          <button 
-                            key={idx}
-                            onClick={() => handleAnswerSelect(idx)}
-                            class={`w-full text-left p-4 rounded-lg border transition ${btnStyle}`}
-                          >
-                            {opt}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {selectedOpt !== null && (
-                      <div class="p-4 bg-slate-800 rounded-lg border border-cyan-800 mb-6">
-                        <p class="text-sm text-cyan-300"><strong>Explanation:</strong> {QUIZ_QUESTIONS[quizIndex].explain}</p>
-                      </div>
-                    )}
-
-                    {selectedOpt !== null && (
-                      <button 
-                        onClick={nextQuestion}
-                        class="w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg transition"
-                      >
-                        {quizIndex + 1 === QUIZ_QUESTIONS.length ? 'See Final Score' : 'Next Question'}
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <div class="text-center py-8">
-                    <h2 class="text-3xl font-bold text-cyan-400 mb-2">Quiz Complete!</h2>
-                    <p class="text-xl text-slate-300 mb-6">You scored <span class="text-cyan-300 font-bold">{score}</span> out of {QUIZ_QUESTIONS.length}</p>
-                    <button 
-                      onClick={() => {
-                        setQuizIndex(0);
-                        setSelectedOpt(null);
-                        setScore(0);
-                        setQuizComplete(false);
-                      }}
-                      class="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold rounded-lg transition"
-                    >
-                      Try Quiz Again
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </main>
-        </div>
-      );
-    }
-
-    const container = document.getElementById('root');
-    const root = ReactDOM.createRoot(container);
-    root.render(<App />);
-  </script>
-</body>
-</html>
+                <div class="flex
